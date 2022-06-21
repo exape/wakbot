@@ -2,6 +2,8 @@ import cv2
 from cv2 import pencilSketch
 import numpy as np
 import pyautogui
+import math
+import time
 
 list = []
 
@@ -57,12 +59,16 @@ def tilefinder(imagetoscan,couleur):
     cv2.imshow("lol", output)
     cv2.waitKey(0)
 
+
 def clickOre():
+    list.sort(key=lambda x: math.sqrt((x[0]-960)**2+(x[1]-540)**2))
+    for [cx,cy] in list:
+        print("list sorted:" ,cx, cy)
     for i in range(len(list)):
         pyautogui.click(button='right',x=list[i][0],y=list[i][1])
-        input("C'est la pause")
+        time.sleep(0.5)
 
-        
+
 # program itself
 tilefinder("images/ore1.png",152)
 clickOre()
