@@ -8,6 +8,7 @@ list = []
 def tilefinder(imagetoscan):
     # image read
     img = cv2.imread(imagetoscan, 1)
+
     # fill black on sides to fix hud problem
     for i in range(15):
         img[:, i] = 0
@@ -39,7 +40,7 @@ def tilefinder(imagetoscan):
     )
     output = cv2.drawContours(segmented_img, contours, -1, (0, 0, 255), 3)
 
-    # find centers and display coordinates on shell
+    # find centers coordinates
     for i in contours:
         M = cv2.moments(i)
         if M["m00"] != 0:
