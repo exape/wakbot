@@ -8,7 +8,7 @@ import time
 list = []
 
 
-def tilefinder(imagetoscan,couleur):
+def tilefinder(imagetoscan, couleur):
     # image read
     img = cv2.imread(imagetoscan, 1)
 
@@ -23,8 +23,8 @@ def tilefinder(imagetoscan,couleur):
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
     # setting bounds for color detection
-    lower_bound = np.array([couleur-35, 50, 50])
-    upper_bound = np.array([couleur+35, 255, 255])
+    lower_bound = np.array([couleur - 35, 50, 50])
+    upper_bound = np.array([couleur + 35, 255, 255])
 
     # finding the colors using the boundaries created right before
     mask = cv2.inRange(hsv, lower_bound, upper_bound)
@@ -56,8 +56,6 @@ def tilefinder(imagetoscan,couleur):
         else:
             print("no tiles found")
 
-    cv2.imshow("lol", output)
-    cv2.waitKey(0)
 
 
 def clickOre():
@@ -70,10 +68,6 @@ def clickOre():
 
 
 # program itself
-tilefinder("images/ore1.png",152)
+time.sleep(3)
+tilefinder("images/ore1.png", 152)
 clickOre()
-
-
- 
-
-
