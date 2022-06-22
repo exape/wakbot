@@ -1,16 +1,39 @@
-import cv2
+import cv2 as cv
 from cv2 import pencilSketch
 import numpy as np
 import pyautogui
 import math
 import time
+import mss 
 
-list = []
+
+def doscreenshot():
+    with mss.mss() as sct:
+        # get information of monitor 1(adrien) or monitor 2(flavien, lucas)
+        monitor_number = 2
+        mon = sct.monitors[monitor_number]
+        monitor = {
+            "top": mon["top"],
+            "left": mon["left"],
+            "width": mon["width"],
+            "height": mon["height"],
+            "mon": monitor_number,
+        }
+
+        # Grab the image screen
+        img = np.array(sct.grab(monitor))
+
+        return img.astype(np.uint8)
 
 
-def tilefinder(imagetoscan, couleur):
-    # image read
-    img = cv2.imread(imagetoscan, 1)
+
+kernel = cv.imread('image.png')
+test = cv.imread("test.png")
+def findmatch():
+
+    # get screenshot
+    img = doscreenshot()
+    img = img[:,:,0:3]
 
     # fill black on sides to fix hud problem
     for i in range(15):
@@ -18,56 +41,19 @@ def tilefinder(imagetoscan, couleur):
         img[i, :] = 0
         img[:, len(img[0]) - i - 1] = 0
         img[len(img) - i - 1, :] = 0
+        
+    res = cv.matchTemplate(img, kernel, cv.TM_CCOEFF_NORMED)
+    # cv.imshow('res',res)
+    # cv.waitKey()
+    min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
+    threshold = 0.8
+    print(max_loc,max_val)
+    if max_val >= threshold:
+        print('Found needle.')
+    pyautogui.click(button='right',x=max_loc[0]+1920,y=max_loc[1])
 
-    # convert hsv from image
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
-    # setting bounds for color detection
-    lower_bound = np.array([couleur - 35, 50, 50])
-    upper_bound = np.array([couleur + 35, 255, 255])
-
-    # finding the colors using the boundaries created right before
-    mask = cv2.inRange(hsv, lower_bound, upper_bound)
-
-    # remove unnecessary noise from mask
-    kernel = np.ones((10, 10), np.uint8)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-
-    # segment only the detected region
-    segmented_img = cv2.bitwise_and(img, img, mask=mask)
-
-    # draw contours from the mask
-    contours, _ = cv2.findContours(
-        mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-    )
-    output = cv2.drawContours(segmented_img, contours, -1, (0, 0, 255), 3)
-
-    # find centers coordinates
-    for i in contours:
-        M = cv2.moments(i)
-        if M["m00"] != 0:
-            cx = int(M["m10"] / M["m00"])
-            cy = int(M["m01"] / M["m00"])
-            cv2.circle(output, (cx, cy), 7, (0, 0, 255), -1)
-            print("found tile! coords are: ", cx, cy)
-            coords = [cx, cy]
-            list.append(coords)
-        else:
-            print("no tiles found")
-
-
-
-def clickOre():
-    list.sort(key=lambda x: math.sqrt((x[0]-960)**2+(x[1]-540)**2))
-    for [cx,cy] in list:
-        print("list sorted:" ,cx, cy)
-    for i in range(len(list)):
-        pyautogui.click(button='right',x=list[i][0],y=list[i][1])
-        time.sleep(0.5)
 
 
 # program itself
-time.sleep(3)
-tilefinder("images/ore1.png", 152)
-clickOre()
+
+findmatch()
