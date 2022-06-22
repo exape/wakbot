@@ -30,22 +30,26 @@ def doscreenshot(monitornumber):
 #   findtile()
 # finds tile based on the image provided
 def findtile(imageprovided):
-    img = imageprovided[:, :, 0:3]
-    # fill black on sides to fix hud problem
-    for i in range(15):
-        img[:, i] = 0
-        img[i, :] = 0
-        img[:, len(img[0]) - i - 1] = 0
-        img[len(img) - i - 1, :] = 0
-    # find the pattern based on the image provided
-    res = cv.matchTemplate(img, kernel, cv.TM_CCOEFF_NORMED)
-    _, max_val, _, max_loc = cv.minMaxLoc(res)
+    # _, max_val, _, max_loc = cv.minMaxLoc(res)
+    # print(max_loc, max_val)
+    # # if found, right click on it
+    # if max_val >= threshold:
+    #     print("Found needle.")
+    # pyautogui.click(button="right", x=max_loc[0], y=max_loc[1])
+
+    img_rgb = imageprovided
+    img_gray = cv.cvtColor(img_rgb, cv.COLOR_RGB2GRAY)
+    template = cv.imread("image.png", 0)
+    w, h = template.shape[::-1]
+    res = cv.matchTemplate(img_gray, template, cv.TM_CCOEFF_NORMED)
     threshold = 0.8
-    print(max_loc, max_val)
-    # if found, right click on it
-    if max_val >= threshold:
-        print("Found needle.")
-    pyautogui.click(button="right", x=max_loc[0], y=max_loc[1])
+
+    loc = np.where(res >= threshold)
+    for pt in zip(*loc[::-1]):
+        cv.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0, 0, 255), 2)
+
+    cv.imshow("", img_rgb)
+    cv.waitKey(0)
 
 
 # main
