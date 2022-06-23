@@ -1,4 +1,4 @@
-# Fish Sniffer
+# Wakbot
 
 An automated wakfu harvester using AI and pre-defined routes, powered by OpenCV and Python.
 
