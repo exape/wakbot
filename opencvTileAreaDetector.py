@@ -65,5 +65,5 @@ try:
     clicktile(findtile(doscreenshot(monitornumber)))
 except TypeError:
     print(
-        "then, we should try to move back to the center to the screen and continue our journey"
+        "then, we should try to move back to the starting point and continue our journey"
     )
