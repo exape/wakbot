@@ -3,10 +3,12 @@ import numpy as np
 import pyautogui
 import time
 import mss
+import math
 
 # global variables
 kernel = cv.imread("image.png")
 monitor_number = 1
+middleofthescreen = [960, 540]
 
 #   doscreenshot()
 # creates a screenshot based on the monitor number
@@ -28,30 +30,37 @@ def doscreenshot(monitornumber):
 
 
 #   findtile()
-# finds tile based on the image provided
+# finds tile based on the image provided and clicks on it
 def findtile(imageprovided):
-    # _, max_val, _, max_loc = cv.minMaxLoc(res)
-    # print(max_loc, max_val)
-    # # if found, right click on it
-    # if max_val >= threshold:
-    #     print("Found needle.")
-    # pyautogui.click(button="right", x=max_loc[0], y=max_loc[1])
-
     img_rgb = imageprovided
     img_gray = cv.cvtColor(img_rgb, cv.COLOR_RGB2GRAY)
     template = cv.imread("image.png", 0)
-    w, h = template.shape[::-1]
     res = cv.matchTemplate(img_gray, template, cv.TM_CCOEFF_NORMED)
     threshold = 0.8
-
     loc = np.where(res >= threshold)
-    for pt in zip(*loc[::-1]):
-        cv.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0, 0, 255), 2)
+    isThereTiles = len(loc[0])
+    coords = []
 
-    cv.imshow("", img_rgb)
-    cv.waitKey(0)
+    if isThereTiles > 1:
+        print("Ressource detected")
+        for pt in zip(*loc[::-1]):
+            coords += [(pt[0], pt[1])]
+        print("i found the following coordinates: ", coords)
+        coords.sort(key=lambda x: math.sqrt((x[0] - 960) ** 2 + (x[1] - 540) ** 2))
+        print("Clicking on the closest one: ", coords[0])
+        return coords[0]
+    else:
+        print("No ressource detected, let's move on.")
+
+
+#   clicktile()
+# clicks on the tile given by a tuple as a parameter
+def clicktile(coordinates):
+    a = coordinates[0]
+    b = coordinates[1]
+    pyautogui.click(button="right", x=a, y=b)
 
 
 # main
 time.sleep(3)
-findtile(doscreenshot(monitor_number))
+clicktile(findtile(doscreenshot(monitor_number)))
