@@ -1,3 +1,4 @@
+import click
 import cv2 as cv
 import numpy as np
 import pyautogui
@@ -5,18 +6,17 @@ import time
 import mss
 import math
 
-# global variables
-kernel = cv.imread("image.png")
-monitor_number = 1
+#   global variables
+monitornumber = 1
 middleofthescreen = [960, 540]
 
 #   doscreenshot()
 # creates a screenshot based on the monitor number
-# monitor 1 = adrien
-# monitor 2 = flavien, lucas
-def doscreenshot(monitornumber):
+# monitor 1 = secondary screen on the right
+# monitor 2 = secondary screen on the left
+def doscreenshot(monitornb):
     with mss.mss() as sct:
-        mon = sct.monitors[monitornumber]
+        mon = sct.monitors[monitornb]
         monitor = {
             "top": mon["top"],
             "left": mon["left"],
@@ -24,7 +24,6 @@ def doscreenshot(monitornumber):
             "height": mon["height"],
             "mon": monitornumber,
         }
-        # Grab the image screen
         img = np.array(sct.grab(monitor))
         return img.astype(np.uint8)
 
@@ -32,35 +31,39 @@ def doscreenshot(monitornumber):
 #   findtile()
 # finds tile based on the image provided and clicks on it
 def findtile(imageprovided):
-    img_rgb = imageprovided
-    img_gray = cv.cvtColor(img_rgb, cv.COLOR_RGB2GRAY)
-    template = cv.imread("image.png", 0)
-    res = cv.matchTemplate(img_gray, template, cv.TM_CCOEFF_NORMED)
+    imgrgb = imageprovided
+    imggray = cv.cvtColor(imgrgb, cv.COLOR_RGB2GRAY)
+    template = cv.imread("images/template.png", 0)
+    res = cv.matchTemplate(imggray, template, cv.TM_CCOEFF_NORMED)
     threshold = 0.8
     loc = np.where(res >= threshold)
-    isThereTiles = len(loc[0])
+    istheretiles = len(loc[0])
     coords = []
 
-    if isThereTiles > 1:
-        print("Ressource detected")
+    if istheretiles > 1:
+        print("ressource detected")
         for pt in zip(*loc[::-1]):
             coords += [(pt[0], pt[1])]
         print("i found the following coordinates: ", coords)
         coords.sort(key=lambda x: math.sqrt((x[0] - 960) ** 2 + (x[1] - 540) ** 2))
-        print("Clicking on the closest one: ", coords[0])
+        print("clicking on the closest one: ", coords[0])
         return coords[0]
     else:
-        print("No ressource detected, let's move on.")
+        print("no ressource detected, let's move on.")
+        return None
 
 
 #   clicktile()
-# clicks on the tile given by a tuple as a parameter
+# clicks on the tile given by a coordinates tuple as a parameter
 def clicktile(coordinates):
-    a = coordinates[0]
-    b = coordinates[1]
-    pyautogui.click(button="right", x=a, y=b)
+    pyautogui.click(button="right", x=coordinates[0], y=coordinates[1])
 
 
-# main
+#   main
 time.sleep(3)
-clicktile(findtile(doscreenshot(monitor_number)))
+try:
+    clicktile(findtile(doscreenshot(monitornumber)))
+except TypeError:
+    print(
+        "then, we should try to move back to the center to the screen and continue our journey"
+    )
